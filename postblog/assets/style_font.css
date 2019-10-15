@@ -1,0 +1,11 @@
+/*
+Choose own font!
+https://fonts.google.com/
+https://developers.google.com/fonts/docs/getting_started
+*/
+
+@import url('https://fonts.googleapis.com/css?family=Varela+Round&display=swap');
+
+.title {
+    font-family: 'Varela Round', sans-serif;
+}
