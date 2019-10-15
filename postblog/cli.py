@@ -86,7 +86,6 @@ class CommandLineInterface:
             'publication': post_time.pub,
             'categories':  categories,
         })
-        self.check()
 
     def check(self):
         pprint(self.config_path.absolute())
@@ -98,6 +97,17 @@ class CommandLineInterface:
             t = self.env.get_template('rss.xml.j2')
             file.write(t.render(last_build=Time(Datetime.now()).pub,
                                 **self.c, **self.data))
+        self.post('William H. Crook', "William H. Crook was one of President Abraham Lincoln's bodyguards "
+                                      "in 1865. After Lincoln's assassination (while Crook was off duty), "
+                                      "he continued to work in the White House for a total of over 50 year"
+                                      "s, serving 12 presidents. Crook, a member of the Washington Police "
+                                      "Force and a former Union Army soldier, was selected as one of Linco"
+                                      "ln's bodyguards in January 1865.", ['historical', 'lookback'])
+        with open(self.web_path / 'index.html', 'w') as file:
+            t = self.env.get_template('index.html.j2')
+            file.write(t.render(last_build=Time(Datetime.now()).pub,
+                                **self.c, **self.data))
+
 
 
 def main():
