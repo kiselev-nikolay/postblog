@@ -1,0 +1,20 @@
+[[source]]
+name = "pypi"
+url = "https://pypi.org/simple"
+verify_ssl = true
+
+[dev-packages]
+flake8 = "*"
+pytest = "*"
+mccabe = "*"
+flake8-docstrings = "*"
+flake8-quotes = "*"
+flake8-mypy = "*"
+
+[packages]
+parso = "*"
+fire = "*"
+jinja2 = "*"
+
+[requires]
+python_version = "3.7"

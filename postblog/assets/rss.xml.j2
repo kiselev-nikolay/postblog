@@ -1,0 +1,23 @@
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>{{site.name}}</title>
+    <description>{{site.description}}</description>
+    <link>{{site.links.home}}</link>
+    <atom:link href="{{site.links.rss}}" rel="self" type="application/rss+xml"/>
+    <pubDate>{{site.last_build}}</pubDate>
+    <lastBuildDate>{{site.last_build}}</lastBuildDate>
+    <generator>{{site.generator}}</generator>
+{% for article in articles %}
+      <item>
+        <title>{{article.title}}</title>
+        <description>{{article.text}}</description>
+        <pubDate>{{article.publication}}</pubDate>
+        <link>{{article.link}}</link>
+        <guid isPermaLink="true">{{article.link}}</guid>
+    {% for category in article.categories %}
+        <category>{{category}}</category>
+    {% endfor %}
+      </item>
+{% endfor %}
+  </channel>
+</rss>
