@@ -6,8 +6,8 @@
     <meta name="robots" content="index,follow">
     <meta name="robots" content="all">
     <meta name="theme-color" content="{{site.theme.color}}">
-    <link rel="icon" type="image/png" href="/assets/{{assets.cover}}" />
-    <link rel="manifest" href="/assets/{{assets.manifest}}">
+    <link rel="icon" type="image/png" href="{{page.base}}assets/{{assets.cover}}" />
+    <link rel="manifest" href="{{page.base}}assets/{{assets.manifest}}">
     <title>{{page.name}} | {{site.name}}</title>
     <meta name="description" content="{{site.description}}">
     <meta itemprop="name" content="{{site.name}}">
@@ -26,8 +26,8 @@
     <meta name="twitter:description" content="{{site.description}}">
     <meta name="twitter:creator" content="{{contact.twitter}}">
     <meta property="twitter:image" content="{{site.link}}/assets/{{assets.cover}}">
-    <link rel="stylesheet" href="assets/style.css">
-    <link rel="stylesheet" href="assets/style_font.css">
+    <link rel="stylesheet" href="{{page.base}}assets/style.css">
+    <link rel="stylesheet" href="{{page.base}}assets/style_font.css">
     <link rel="alternate" type="application/rss+xml" title="{{site.name}}" href="{{site.link}}/feed.xml">
     <link rel="canonical" href="/">
     <script>{{script_js}}</script>

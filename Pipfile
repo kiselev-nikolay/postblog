@@ -16,6 +16,9 @@ parso = "*"
 fire = "*"
 jinja2 = "*"
 pyyaml = "*"
+starlette = "*"
+uvicorn = "*"
+aiofiles = "*"
 
 [requires]
 python_version = "3.7"

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="author" content="Machine and me">
+    <meta name="document-state" content="Dynamic">
+    <meta name="robots" content="noindex,nofollow">
+    <title>Dashboard | Postblog</title>
+    <link rel="stylesheet" href="/site/assets/style.css">
+    <link rel="stylesheet" href="/site/assets/style_font.css">
+    <link rel="canonical" href="/">
+    <script></script>
+</head>
+
+<body>
+    <section class="section">
+        <div class="container" id="app">
+            <h1 class="title">Postblog Dashboard</h1>
+            <div class="columns" style="flex-direction: row-reverse">
+                <div class="column is-4">
+                    <div v-if="show_posting">
+                        <h3 class="title is-5">New post</h3>
+                        <div class="field">
+                            <label class="label">Title</label>
+                            <div class="control">
+                                <input class="input" placeholder="My first post" v-model='new_post.title'></input>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Body</label>
+                            <div class="control">
+                                <textarea class="textarea has-fixed-size" placeholder="I think I should say hello world" v-model='new_post.text'></textarea>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="control">
+                                <button :class="(failed == 'post') ? 'button is-danger' : 'button is-info'" @click="post">Post</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-8">
+                    <div class="buttons">
+                        <a :class="(processing) ? 'button is-loading' : 'button'" href="/site/" target="_blank">View</a>
+                        <a :class="(processing) ? 'button is-info is-loading' : 'button is-info'" disabled>+ Page</a>
+                        <button class="button is-info" @click="toggle_posting">+ Post</button>
+                        <button :class="(failed == 'build') ? 'button is-danger' : 'button is-success'" @click="build">Build</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script>
+        async function butler(command, args) {
+            const response = await fetch('/butler', {
+                method: 'POST',
+                body: JSON.stringify({
+                    'command': command,
+                    'args': args
+                })
+            });
+            const data = await response.json();
+            //console.log(data);
+            if (data['status'] == 'complete') {
+                return true
+            } else if (data['status'] == 'failed') {
+                return false
+            }
+            return data
+        }
+        var app = new Vue({
+            el: '#app',
+            data: {
+                processing: false,
+                failed: '',
+                show_posting: false,
+                new_post: {
+                    title: '',
+                    text: ''
+                }
+            },
+            methods: {
+                toggle_posting: function() {this.show_posting = !this.show_posting},
+                build: async function() {
+                    app.processing = true;
+                    let result = await butler('build', null);
+                    app.processing = false;
+                    if (!result) {
+                        app.failed = 'build';
+                    }
+                },
+                post: async function() {
+                    app.processing = true;
+                    let result = await butler('post', {title: this.new_post.title, text: this.new_post.text, categories: []});
+                    app.processing = false;
+                    if (!result) {
+                        app.failed = 'post';
+                    }
+                }
+            }
+        })
+    </script>
+</body>
+
+</html>
