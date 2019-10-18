@@ -6,26 +6,68 @@
 </head>
 
 <body>
-    <section class="section">
-        <div class="container">
-            <h1 class="title">{{site.name}}</h1>
-            {% for article in posts %}
-            <div class="card">
-                <div class="card-content">
-                    <div class="content">
-                        <p class="title is-4"><a href="{{article.link}}">{{article.title}}</a></p>
-                        {{article.text}}
-                        {% for category in article.categories %}
-                        <a href="#">#{{category}}</a>
-                        {% endfor %}
-                        <br>
-                        <time datetime="{{article.publication}}">{{article.publication[5:16]}}</time>
-                    </div>
-                </div>
+    <section class="hero is-dark is-official is-large">
+        {% include 'nav.html.j2' %}
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <h1 class="title">
+                    {{site.name}}
+                </h1>
+                <h2 class="subtitle">
+                    {{site.description}}
+                </h2>
             </div>
-            {% endfor %}
         </div>
     </section>
+    <section class="section">
+        <div class="container">
+            <div class="tile is-ancestor">
+                <div class="tile is-vertical is-8">
+                    <div class="tile">
+                        <div class="tile is-parent is-vertical">
+                            <article class="tile is-child notification">
+                                <p class="title">Vertical...</p>
+                                <p class="subtitle">Top tile</p>
+                            </article>
+                            <article class="tile is-child notification">
+                                <p class="title">...tiles</p>
+                                <p class="subtitle">Bottom tile</p>
+                            </article>
+                        </div>
+                        <div class="tile is-parent">
+                            <article class="tile is-child notification">
+                                <p class="title">Middle tile</p>
+                                <p class="subtitle">With an image</p>
+                                <div class="content">
+                                    <!-- Content -->
+                                </div>
+                            </article>
+                        </div>
+                    </div>
+                    <div class="tile is-parent">
+                        <article class="tile is-child notification">
+                            <p class="title">Wide tile</p>
+                            <p class="subtitle">Aligned with the right tile</p>
+                            <div class="content">
+                                <!-- Content -->
+                            </div>
+                        </article>
+                    </div>
+                </div>
+                <div class="tile is-parent">
+                    <article class="tile is-child notification">
+                        <div class="content">
+                            <p class="title">Contact us</p>
+                            <div class="content">
+                                {% include 'formcarry.html.j2' %}
+                            </div>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </div>
+    </section>
+    {% include 'footer.html.j2' %}
 </body>
 
 </html>

@@ -86,6 +86,7 @@
             methods: {
                 toggle_posting: function() {this.show_posting = !this.show_posting},
                 build: async function() {
+                    app.failed = '';
                     app.processing = true;
                     let result = await butler('build', null);
                     app.processing = false;

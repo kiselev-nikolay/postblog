@@ -18,7 +18,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as file:
 
 setup(
     name='postblog',
-    version='0.4.1',
+    version='0.4.2',
     description='Simplified analogue of jekull on python',
     long_description=long_description,
     long_description_content_type='text/markdown',

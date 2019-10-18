@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+{% include 'head.html.j2' %}
+</head>
+
+<body>
+    <section class="hero is-dark is-official is-medium">
+        {% include 'nav.html.j2' %}
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <h1 class="title">
+                    News
+                </h1>
+                <h2 class="subtitle">
+                    {{site.name}}
+                </h2>
+            </div>
+        </div>
+    </section>
+    <section class="section">
+        <div class="container">
+            <h2 class="title is-4">Posts:</h2>
+            {% for article in posts %}
+            <div class="card">
+                <div class="card-content">
+                    <div class="content">
+                        <p class="title is-4"><a href="{{article.link}}">{{article.title}}</a></p>
+                        {{article.text[:320]}}...
+                        {% for category in article.categories %}
+                        <a href="#">#{{category}}</a>
+                        {% endfor %}
+                        <br>
+                        <b><time datetime="{{article.publication}}">{{article.publication[5:16]}}</time></b>
+                    </div>
+                </div>
+            </div>
+            <br>
+            {% endfor %}
+        </div>
+    </section>
+    {% include 'footer.html.j2' %}
+</body>
+
+</html>

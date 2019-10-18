@@ -6,12 +6,22 @@
 </head>
 
 <body>
+    <section class="hero is-dark">
+        {% include 'nav.html.j2' %}
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <h1 class="title">
+                    {{post.title}}
+                </h1>
+            </div>
+        </div>
+    </section>
     <section class="section">
         <div class="container">
-            <h1 class="title">{{post.title}}</h1>
             <p>{{post.text}}</p>
         </div>
     </section>
+    {% include 'footer.html.j2' %}
 </body>
 
 </html>

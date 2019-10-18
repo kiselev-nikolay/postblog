@@ -34,19 +34,18 @@ class CommandLineInterface:
 
         self._config = {
             'site': {
-                'name':        'Machine and me',
-                'author':      'Kiselev Nikolay',
+                'name':        'Demo demo',
+                'author':      'Ice Foot',
                 'description': 'Site about something original or not',
-                'script_js':   'console.log("Somebody watching me")',
-                'link':        'https://test.machineand.me',
+                'script_js':   'console.log("Analytics not used")',
+                'link':        'https://example.com',
                 'formcarry':   'https://formcarry.com/s/...',
                 'theme': {
-                    'color': '#00bebe'
+                    'color': '#ab10ea'
                 }
             },
             'contact': {
-                'name':    'Nikolay',
-                'twitter': '@machineand_me'
+                'name':    'Foot',
             },
             'assets': {
                 'favicon':  'favicon.png',
@@ -72,7 +71,8 @@ class CommandLineInterface:
     
     def clear(self):
         for directory in [self._web_path, self._storage, self._build_path]:
-            shutil.rmtree(directory)
+            if directory.exists():
+                shutil.rmtree(directory)
 
     def init(self):
         if self._web_path.exists():
@@ -91,7 +91,8 @@ class CommandLineInterface:
         self.build()
 
     def _refresh_web_posts(self):
-        for post_path in self._posts.iterdir():
+        posts = [p for p in self._posts.iterdir()]
+        for post_path in reversed(sorted(posts)):
             with open(post_path) as file:
                 yield yaml.load(file, Loader=yaml.SafeLoader)
 
@@ -126,6 +127,11 @@ class CommandLineInterface:
         self.build()
     
     def build(self):
+        self._web = {
+            'posts': [],
+            'pages': []
+        }
+
         if self._web_path.exists():
             shutil.rmtree(self._web_path)
         self._web_path.mkdir()
@@ -138,10 +144,16 @@ class CommandLineInterface:
             if asset.is_file() and asset.name[-3:] != '.j2':
                 shutil.copyfile(asset, assets_path / asset.name)
 
-        with open(self._web_path / 'feed.xml', 'w') as file:
-            t = self._env.get_template('rss.xml.j2')
-            file.write(t.render(last_build=Time(Datetime.now()).pub,
-                                **self._config, **self._web))
+        for post in self._refresh_web_posts():
+            self._web['posts'].append(post)
+            post_path = self._web_path / 'news' / post['link']
+            post_path.parent.mkdir(exist_ok=True, parents=True)
+            with open(post_path, 'w') as file:
+                t = self._env.get_template('post.html.j2')
+                file.write(t.render(last_build=Time(Datetime.now()).pub,
+                                    page=dict(name=post['title'], base='../../../../'),
+                                    post=post,
+                                    **self._config, **self._web))
 
         with open(self._web_path / 'index.html', 'w') as file:
             t = self._env.get_template('index.html.j2')
@@ -149,16 +161,17 @@ class CommandLineInterface:
                                 page=dict(name='Home', base=''),
                                 **self._config, **self._web))
         
-        for post in self._refresh_web_posts():
-            self._web['posts'].append(post)
-            post_path = self._web_path / post['link']
-            post_path.parent.mkdir(exist_ok=True, parents=True)
-            with open(post_path, 'w') as file:
-                t = self._env.get_template('post.html.j2')
-                file.write(t.render(last_build=Time(Datetime.now()).pub,
-                                    page=dict(name=post['title'], base='../../../'),
-                                    post=post,
-                                    **self._config, **self._web))
+        (self._web_path / 'news').mkdir(exist_ok=True)
+        with open(self._web_path / 'news/index.html', 'w') as file:
+            t = self._env.get_template('news.html.j2')
+            file.write(t.render(last_build=Time(Datetime.now()).pub,
+                                page=dict(name='News', base='../'),
+                                **self._config, **self._web))
+
+        with open(self._web_path / 'feed.xml', 'w') as file:
+            t = self._env.get_template('rss.xml.j2')
+            file.write(t.render(last_build=Time(Datetime.now()).pub,
+                                **self._config, **self._web))
 
     def admin(self):
         from starlette.applications import Starlette
@@ -175,27 +188,26 @@ class CommandLineInterface:
         app.mount('/site', app=StaticFiles(directory=self._web_path, html=True), name="static")
         app.mount('/dashboard', app=StaticFiles(directory=self._assets_templates / 'admin', html=True), name="static")
 
-        @app.route('/')#, methods=['post'])
+        @app.route('/')
         async def _homepage(request):
             return RedirectResponse('/dashboard')
+
+        @app.route('/news/')
+        async def _homepage(request):
+            return RedirectResponse('/site/news')
 
         @app.route('/butler', methods=['post'])
         async def _butler(request):
             query = await request.json()
             command = getattr(self, query['command'])
-            if query.get('args') and hasattr(query.get('args'), 'keys'):
-                responce = command(**query['args'])
-            else:
-                responce = command()
-            return JSONResponse(responce or {'status': 'complete'})
-            # try:
-            #     if query.get('args') and hasattr(query.get('args'), 'keys'):
-            #         responce = command(**query['args'])
-            #     else:
-            #         responce = command()
-            #     return JSONResponse(responce or {'status': 'complete'})
-            # except Exception:
-            #     return JSONResponse({'status': 'failed'})
+            try:
+                if query.get('args') and hasattr(query.get('args'), 'keys'):
+                    responce = command(**query['args'])
+                else:
+                    responce = command()
+                return JSONResponse(responce or {'status': 'complete'})
+            except Exception:
+                return JSONResponse({'status': 'failed'})
 
         self.build()
 
