@@ -19,35 +19,57 @@
     <section class="section">
         <div class="container" id="app">
             <h1 class="title">Postblog Dashboard</h1>
-            <div class="columns" style="flex-direction: row-reverse">
-                <div class="column is-4">
-                    <div v-if="show_posting">
-                        <h3 class="title is-5">New post</h3>
-                        <div class="field">
-                            <label class="label">Title</label>
-                            <div class="control">
-                                <input class="input" placeholder="My first post" v-model='new_post.title'></input>
-                            </div>
+            <div class="columns">
+                <div class="column is-7">
+                    <h3 class="title is-5">New post</h3>
+                    <div class="field">
+                        <label class="label">Title</label>
+                        <div class="control">
+                            <input class="input" placeholder="My first post" v-model="new_post.title"></input>
                         </div>
-                        <div class="field">
-                            <label class="label">Body</label>
-                            <div class="control">
-                                <textarea class="textarea has-fixed-size" placeholder="I think I should say hello world" v-model='new_post.text'></textarea>
-                            </div>
+                    </div>
+                    <div class="field">
+                        <label class="label">Body</label>
+                        <div class="control">
+                            <textarea class="textarea" rows="12" placeholder="I think I should say hello world" v-model="new_post.text"></textarea>
                         </div>
-                        <div class="field">
-                            <div class="control">
-                                <button :class="(failed == 'post') ? 'button is-danger' : 'button is-info'" @click="post">Post</button>
-                            </div>
+                    </div>
+                    <div class="field">
+                        <div class="control">
+                            <button :class="(failed == 'post') ? 'button is-danger' : 'button is-info'" @click="post">Post</button>
                         </div>
                     </div>
                 </div>
-                <div class="column is-8">
+                <div class="column is-5">
                     <div class="buttons">
                         <a :class="(processing) ? 'button is-loading' : 'button'" href="/site/" target="_blank">View</a>
                         <a :class="(processing) ? 'button is-info is-loading' : 'button is-info'" disabled>+ Page</a>
-                        <button class="button is-info" @click="toggle_posting">+ Post</button>
                         <button :class="(failed == 'build') ? 'button is-danger' : 'button is-success'" @click="build">Build</button>
+                    </div>
+                    <div>
+                        <h3 class="title is-4">Settings</h3>
+                        <div v-for="fields, fields_title in config">
+                            <h4 class="title is-5">{{fields_title}}</h4>
+                            <div class="field is-horizontal" v-for="field, title in fields">
+                                <div class="field-label is-normal">
+                                    <label class="label">{{title}}</label>
+                                </div>
+                                <div class="field-body">
+                                    <div class="field">
+                                        <div class="control">
+                                            <input class="input" v-model="config[fields_title][title]" v-if="title != 'script_js'"></input>
+                                            <textarea class="textarea" v-model="config[fields_title][title]" v-if="title == 'script_js'"></textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br>
+                        </div>
+                        <div class="field">
+                            <div class="control">
+                                <button :class="(failed == 'set_config') ? 'button is-danger' : (processing) ? 'button is-loading' : 'button is-success'" @click="set_config">Update</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -64,7 +86,6 @@
                 })
             });
             const data = await response.json();
-            //console.log(data);
             if (data['status'] == 'complete') {
                 return true
             } else if (data['status'] == 'failed') {
@@ -77,14 +98,13 @@
             data: {
                 processing: false,
                 failed: '',
-                show_posting: false,
                 new_post: {
                     title: '',
                     text: ''
-                }
+                },
+                config: {}
             },
             methods: {
-                toggle_posting: function() {this.show_posting = !this.show_posting},
                 build: async function() {
                     app.failed = '';
                     app.processing = true;
@@ -92,6 +112,25 @@
                     app.processing = false;
                     if (!result) {
                         app.failed = 'build';
+                    }
+                },
+                get_config: async function() {
+                    app.failed = '';
+                    app.processing = true;
+                    let result = await butler('get_config', null);
+                    app.config = result;
+                    app.processing = false;
+                    if (!result) {
+                        app.failed = 'get_config';
+                    }
+                },
+                set_config: async function() {
+                    app.failed = '';
+                    app.processing = true;
+                    let result = await butler('set_config', {config: this.config});
+                    app.processing = false;
+                    if (!result) {
+                        app.failed = 'set_config';
                     }
                 },
                 post: async function() {
@@ -104,6 +143,8 @@
                 }
             }
         })
+        // Pull init
+        app.get_config();
     </script>
 </body>
 

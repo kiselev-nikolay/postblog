@@ -6,7 +6,7 @@ Use is easier than any blog ever:
 ```
 pip install postblog
 postblog init
-postblog admin
+postblog open browser
 ```
 
 After that just upload the site folder to a hosting or github pages

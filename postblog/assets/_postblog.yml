@@ -1,0 +1,15 @@
+asset:
+  cover: cover.png
+  favicon: favicon.png
+  manifest: manifest.webmanifest
+contact:
+  name: Postblog team
+site:
+  author: Postblog team
+  description: Site for very very fast sites management
+  formcarry: https://formcarry.com/s/...
+  link: https://machineand.me
+  name: Postblog
+  script_js: console.log("Analytics is not used");
+theme:
+  color: '#633fea'
