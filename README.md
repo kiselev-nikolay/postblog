@@ -2,6 +2,8 @@
 
 The kickerly fast site management
 
+![logo](https://raw.githubusercontent.com/machineandme/postblog/master/_readme_files/logo.png)
+
 Use is easier than any blog ever:
 ```
 pip install postblog
@@ -11,10 +13,10 @@ postblog open browser
 
 After that just upload the site folder to a hosting or github pages
 
-![1](_readme_files/1.png?raw=true)
+![screenshot1](https://raw.githubusercontent.com/machineandme/postblog/master/_readme_files/1.png)
 
-![2](_readme_files/2.png?raw=true)
+![screenshot2](https://raw.githubusercontent.com/machineandme/postblog/master/_readme_files/2.png)
 
-![3](_readme_files/3.png?raw=true)
+![screenshot3](https://raw.githubusercontent.com/machineandme/postblog/master/_readme_files/3.png)
 
-![4](_readme_files/4.png?raw=true)
+![screenshot4](https://raw.githubusercontent.com/machineandme/postblog/master/_readme_files/4.png)
