@@ -1,6 +1,6 @@
 # Postblog
 
-Simplified analogue of jekull on python
+The kickerly fast site management
 
 Use is easier than any blog ever:
 ```

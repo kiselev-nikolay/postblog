@@ -10,6 +10,7 @@ import webbrowser
 import uvicorn
 
 from ._web import create_app
+from . import VERSION
 
 
 class Time:
@@ -172,6 +173,12 @@ class Interface:
 
         with open(self._web_path / 'feed.xml', 'w') as file:
             t = self._env.get_template('rss.xml.j2')
+            file.write(t.render(last_build=Time(Datetime.now()).pub,
+                                generator='Postblog {}'.format(VERSION),
+                                **self._config, **self._web))
+
+        with open(self._web_path / 'manifest.json', 'w') as file:
+            t = self._env.get_template('manifest.json.j2')
             file.write(t.render(last_build=Time(Datetime.now()).pub,
                                 **self._config, **self._web))
 

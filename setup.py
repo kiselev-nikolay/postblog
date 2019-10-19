@@ -3,6 +3,9 @@ from os import path
 import json
 
 
+from postblog import VERSION
+
+
 def requirements_from_pipfile_lock(file_path='Pipfile.lock'):
     with open(file_path) as file:
         pipfile = json.load(file)
@@ -18,8 +21,8 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as file:
 
 setup(
     name='postblog',
-    version='0.5.1',
-    description='Simplified analogue of jekull on python',
+    version=VERSION,
+    description='The kickerly fast site management',
     long_description=long_description,
     long_description_content_type='text/markdown',
     url='https://github.com/machineandme/postblog',
