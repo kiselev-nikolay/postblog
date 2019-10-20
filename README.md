@@ -1,5 +1,8 @@
 # Postblog
 
+[![Build Status](https://travis-ci.org/machineandme/postblog.svg?branch=master)](https://travis-ci.org/machineandme/postblog)
+
+
 The kickerly fast site management
 
 ![logo](https://raw.githubusercontent.com/machineandme/postblog/master/_readme_files/logo.png)
