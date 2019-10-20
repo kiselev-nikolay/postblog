@@ -3,6 +3,11 @@ python:
 - 3.7
 install:
 - pipenv install --dev
+- pipenv run pip install -e .
 script:
-- pipenv run pytest test.py
+- pipenv run postblog clear
+- pipenv run postblog init
+- pipenv run postblog build
+- pipenv run postblog clear
 - pipenv run flake8 postblog/*
+- pipenv run pytest test.py
