@@ -2,7 +2,8 @@ from typing import Iterable, Dict
 from pathlib import Path
 import warnings
 import shutil
-from time import sleep
+import pickle
+from time import time_ns
 from datetime import datetime as Datetime
 from jinja2 import Environment, FileSystemLoader
 import yaml
@@ -10,6 +11,7 @@ import webbrowser
 import uvicorn
 
 from ._web import create_app
+from .style import color_gen
 from . import VERSION
 
 
@@ -53,6 +55,12 @@ class Interface:
                 str(self._build_path.absolute())
             )
         )
+
+        self._analytics = {}
+        self._analytics_storage = self._storage / 'analytics.bin'
+        if self._analytics_storage.exists():
+            with open(self._analytics_storage, 'rb') as file:
+                self._analytics.update(pickle.load(file))
 
     def _refresh_web_posts(self):
         posts = [p for p in self._posts.iterdir()]
@@ -128,8 +136,18 @@ class Interface:
 
     def get_config(self):
         return self._config
+
+    def _write_analytics(self, key, value):
+        self._analytics[key] = value
+        with open(self._analytics_storage, 'wb') as file:
+            pickle.dump(self._analytics, file)
+
+    def get_analytics(self):
+        return self._analytics
     
     def build(self):
+        start = time_ns()
+
         self._web = {
             'posts': [],
             'pages': []
@@ -146,6 +164,10 @@ class Interface:
         for asset in self._build_path.iterdir():
             if asset.is_file() and asset.name[-3:] != '.j2' and asset.name[0] != '_':
                 shutil.copyfile(asset, assets_path / asset.name)
+
+        with open(assets_path / 'style.css', 'w') as file:
+            t = self._env.get_template('style.css.j2')
+            file.write(t.render(**self._config['theme'], color=color_gen))
 
         for post in self._refresh_web_posts():
             self._web['posts'].append(post)
@@ -181,6 +203,8 @@ class Interface:
             t = self._env.get_template('manifest.json.j2')
             file.write(t.render(last_build=Time(Datetime.now()).pub,
                                 **self._config, **self._web))
+        
+        self._write_analytics('build_speed', time_ns() - start)
 
     def admin(self):
         message = '"postblog admin" is deprecated and will be removed ' \

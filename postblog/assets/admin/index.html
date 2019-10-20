@@ -14,62 +14,97 @@
     <link rel="stylesheet" href="/site/assets/style.css">
     <link rel="stylesheet" href="/site/assets/style_font.css">
     <link rel="canonical" href="/">
-    <script></script>
+    <style>
+        [v-cloak] {
+            display: none;
+        }
+    </style>
 </head>
 
 <body>
-    <section class="section">
-        <div class="container" id="app">
+    <section class="section has-background-light">
+        <div class="container" id="app" v-cloak>
             <h1 class="title">Postblog Dashboard</h1>
             <div class="columns">
                 <div class="column is-7">
-                    <h3 class="title is-5">New post</h3>
-                    <div class="field">
-                        <label class="label">Title</label>
-                        <div class="control">
-                            <input class="input" placeholder="My first post" v-model="new_post.title"></input>
+                    <div class="box">
+                        <h3 class="title is-5">New post</h3>
+                        <div class="field">
+                            <label class="label">Title</label>
+                            <div class="control">
+                                <input class="input" placeholder="My first post" v-model="new_post.title"></input>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <label class="label">Body</label>
+                            <div class="control">
+                                <textarea class="textarea" rows="12" placeholder="I think I should say hello world"
+                                    v-model="new_post.text"></textarea>
+                            </div>
+                        </div>
+                        <div class="field">
+                            <div class="control">
+                                <button
+                                    :class="(failed == 'post') ? 'button is-rounded is-danger' : 'button is-rounded is-primary'"
+                                    @click="post">Post</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="field">
-                        <label class="label">Body</label>
-                        <div class="control">
-                            <textarea class="textarea" rows="12" placeholder="I think I should say hello world" v-model="new_post.text"></textarea>
+                    <div class="box">
+                        <div v-if="failed == 'get_analytics'">
+                            <button class="button is-rounded is-danger" @click="get_analytics">Reload</button>
+                            <br>
                         </div>
-                    </div>
-                    <div class="field">
-                        <div class="control">
-                            <button :class="(failed == 'post') ? 'button is-danger' : 'button is-info'" @click="post">Post</button>
+                        <div class="table-container">
+                            <table class="table is-hoverable is-striped">
+                                <tbody>
+                                    <tr>
+                                        <th>Build speed:</th>
+                                        <td>{{Math.round((analytics.build_speed / 1000000000)*100)/100}} seconds</td>
+                                    </tr>
+                                </tbody>
+                            </table>
                         </div>
                     </div>
                 </div>
                 <div class="column is-5">
-                    <div class="buttons">
-                        <a :class="(processing) ? 'button is-loading' : 'button'" href="/site/" target="_blank">View</a>
-                        <a :class="(processing) ? 'button is-info is-loading' : 'button is-info'" disabled>+ Page</a>
-                        <button :class="(failed == 'build') ? 'button is-danger' : 'button is-success'" @click="build">Build</button>
+                    <div class="box">
+                        <div class="buttons">
+                            <a :class="(processing) ? 'button is-rounded is-primary is-loading' : 'button is-rounded is-primary'"
+                                href="/site/" target="_blank">View</a>
+                            <a :class="(processing) ? 'button is-rounded is-primary is-loading' : 'button is-rounded is-primary'"
+                                disabled>+ Page</a>
+                            <button
+                                :class="(failed == 'build') ? 'button is-rounded is-danger' : 'button is-rounded is-success'"
+                                @click="build">Build</button>
+                        </div>
                     </div>
-                    <div>
-                        <h3 class="title is-4">Settings</h3>
-                        <div v-for="fields, fields_title in config">
-                            <h4 class="title is-5">{{fields_title}}</h4>
-                            <div class="field is-horizontal" v-for="field, title in fields">
-                                <div class="field-label is-normal">
-                                    <label class="label">{{title}}</label>
-                                </div>
-                                <div class="field-body">
-                                    <div class="field">
-                                        <div class="control">
-                                            <input class="input" v-model="config[fields_title][title]" v-if="title != 'script_js'"></input>
-                                            <textarea class="textarea" v-model="config[fields_title][title]" v-if="title == 'script_js'"></textarea>
-                                        </div>
-                                    </div>
+                    <div class="box">
+                        <div class="tabs is-boxed">
+                            <ul>
+                                <li v-for="fields, fields_title in config"
+                                    :class="(fields_title == settings_cursor) ? 'is-active' : ''">
+                                    <a @click="settings_cursor = fields_title">{{fields_title}}</a>
+                                </li>
+                            </ul>
+                        </div>
+                        <div v-if="fields_title == settings_cursor" v-for="fields, fields_title in config">
+                            <div class="field" v-for="field, title in fields">
+                                <label class="label">{{title}}</label>
+                                <div class="control">
+                                    <input class="input" v-model="config[fields_title][title]"
+                                        v-if="title != 'script_js'"></input>
+                                    <textarea class="textarea" v-model="config[fields_title][title]"
+                                        v-if="title == 'script_js'"></textarea>
                                 </div>
                             </div>
-                            <br>
                         </div>
+                        <br>
                         <div class="field">
                             <div class="control">
-                                <button :class="(failed == 'set_config') ? 'button is-danger' : (processing) ? 'button is-loading' : 'button is-success'" @click="set_config">Update</button>
+                                <button
+                                    :class="(failed == 'set_config') ? 'button is-rounded is-danger' : (processing) ? 'button is-rounded is-loading' : 'button is-rounded is-success'"
+                                    @click="set_config">Apply</button>
                             </div>
                         </div>
                     </div>
@@ -98,6 +133,8 @@
         var app = new Vue({
             el: '#app',
             data: {
+                analytics: {},
+                settings_cursor: 'site',
                 processing: false,
                 failed: '',
                 new_post: {
@@ -107,7 +144,7 @@
                 config: {}
             },
             methods: {
-                build: async function() {
+                build: async function () {
                     app.failed = '';
                     app.processing = true;
                     let result = await butler('build', null);
@@ -115,8 +152,9 @@
                     if (!result) {
                         app.failed = 'build';
                     }
+                    this.get_analytics();
                 },
-                get_config: async function() {
+                get_config: async function () {
                     app.failed = '';
                     app.processing = true;
                     let result = await butler('get_config', null);
@@ -126,27 +164,46 @@
                         app.failed = 'get_config';
                     }
                 },
-                set_config: async function() {
+                set_config: async function () {
                     app.failed = '';
                     app.processing = true;
-                    let result = await butler('set_config', {config: this.config});
+                    let result = await butler('set_config', {
+                        config: this.config
+                    });
                     app.processing = false;
                     if (!result) {
                         app.failed = 'set_config';
                     }
+                    this.get_analytics();
                 },
-                post: async function() {
+                post: async function () {
                     app.processing = true;
-                    let result = await butler('post', {title: this.new_post.title, text: this.new_post.text, categories: []});
+                    let result = await butler('post', {
+                        title: this.new_post.title,
+                        text: this.new_post.text,
+                        categories: []
+                    });
                     app.processing = false;
                     if (!result) {
                         app.failed = 'post';
                     }
-                }
+                    this.get_analytics();
+                },
+                get_analytics: async function () {
+                    app.failed = '';
+                    app.processing = true;
+                    let result = await butler('get_analytics', null);
+                    app.analytics = result;
+                    app.processing = false;
+                    if (!result) {
+                        app.failed = 'get_analytics';
+                    }
+                },
             }
         })
         // Pull init
         app.get_config();
+        app.get_analytics();
     </script>
 </body>
 

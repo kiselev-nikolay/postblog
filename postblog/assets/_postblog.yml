@@ -11,4 +11,9 @@ site:
   name: Postblog
   script_js: console.log("Analytics is not used");
 theme:
-  color: '#633fea'
+  danger: '#f14668'
+  info: '#3298dc'
+  link: '#3273dc'
+  primary: '#633fea'
+  success: '#48c774'
+  warning: '#ffdd57'
