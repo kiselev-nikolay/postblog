@@ -10,6 +10,11 @@ site:
   link: https://machineand.me/
   name: Postblog
   script_js: console.log("Analytics is not used");
+navigation:
+  - name: Github
+    link: https://github.com/machineandme
+  - name: Pypi
+    link: https://pypi.org/user/machineandme/
 theme:
   danger: '#f14668'
   info: '#3298dc'

@@ -1,0 +1,15 @@
+name: Postblog
+title: Postblog
+subtitle: The kickerly fast site management
+link: index
+background: danger
+cards:
+  - size: 12
+    title: Sample Text
+    text: Sample text
+  - size: 5
+    title: Sample Text
+    text: Sample text
+  - size: 7
+    title: Sample Text
+    text: Sample text

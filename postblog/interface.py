@@ -47,7 +47,7 @@ class Interface:
 
         self._web = {
             'posts': [],
-            'pages': []
+            'pages': {}
         }
 
         self._env = Environment(
@@ -105,6 +105,9 @@ class Interface:
         for asset in self._assets_templates.iterdir():
             if asset.is_file() and asset.name[0] != '_':
                 shutil.copyfile(asset, self._build_path / asset.name)
+
+        self._index_path = self._assets_templates / '_index.yml'
+        shutil.copyfile(self._index_path, self._storage / 'pages/index.yml')
 
         self.build()
 
@@ -180,11 +183,13 @@ class Interface:
                                     post=post,
                                     **self._config, **self._web))
 
-        with open(self._web_path / 'index.html', 'w') as file:
-            t = self._env.get_template('index.html.j2')
-            file.write(t.render(last_build=Time(Datetime.now()).pub,
-                                page=dict(name='Home', base=''),
-                                **self._config, **self._web))
+        for page in self._refresh_web_pages():
+            self._web['pages'].append(page)
+            with open(self._web_path / (page['link'] + '.html'), 'w') as file:
+                t = self._env.get_template('page.html.j2')
+                file.write(t.render(last_build=Time(Datetime.now()).pub,
+                                    page=dict(base='', **page),
+                                    **self._config, **self._web))
         
         (self._web_path / 'news').mkdir(exist_ok=True)
         with open(self._web_path / 'news/index.html', 'w') as file:
@@ -211,16 +216,18 @@ class Interface:
                   'since version 1.0.0. Use "postblog open --help" instead'
         warnings.simplefilter('once')
         warnings.warn(message, DeprecationWarning)
-        self.open(browser=True)
+        self.open(dashboard=True)
 
-    def open(self, browser: bool = False, server: bool = False, debug: bool = False):
+    def open(self, dashboard: bool = False, view: bool = False, server: bool = False, debug: bool = False):
         app = create_app(self, debug)
 
         self.build()
 
         host = '0.0.0.0' if server else '127.0.0.1'
 
-        if browser:
-            webbrowser.open_new_tab('http://{}:8060/dashboard'.format(host))
+        if dashboard:
+            webbrowser.open_new_tab('http://{}:8060/dashboard/'.format(host))
+        if view:
+            webbrowser.open_new_tab('http://{}:8060/site/'.format(host))
     
         uvicorn.run(app, host=host, port=8060)

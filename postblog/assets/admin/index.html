@@ -89,13 +89,40 @@
                             </ul>
                         </div>
                         <div v-if="fields_title == settings_cursor" v-for="fields, fields_title in config">
-                            <div class="field" v-for="field, title in fields">
-                                <label class="label">{{title}}</label>
-                                <div class="control">
-                                    <input class="input" v-model="config[fields_title][title]"
-                                        v-if="title != 'script_js'"></input>
-                                    <textarea class="textarea" v-model="config[fields_title][title]"
-                                        v-if="title == 'script_js'"></textarea>
+                            <div v-if="fields_title != 'navigation'">
+                                <div class="field" v-for="field, title in fields">
+                                    <label class="label">{{title}}</label>
+                                    <div class="control">
+                                        <input class="input" v-model="config[fields_title][title]"
+                                            v-if="title != 'script_js'"></input>
+                                        <textarea class="textarea" v-model="config[fields_title][title]"
+                                            v-if="title == 'script_js'"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+                            <div v-if="fields_title == 'navigation'">
+                                <div v-for="field, i in fields">
+                                    <div class="field">
+                                        <label class="label">Link name</label>
+                                        <div class="control">
+                                            <input class="input" v-model="config[fields_title][i]['name']"></input>
+                                        </div>
+                                    </div>
+                                    <div class="field">
+                                        <label class="label">Link address</label>
+                                        <div class="control">
+                                            <input class="input" v-model="config[fields_title][i]['link']"></input>
+                                        </div>
+                                    </div>
+                                    <br>
+                                </div>
+                                <div class="buttons">
+                                    <button v-for="field, i in fields"
+                                        class="button is-rounded is-danger is-small"
+                                        @click="del_nav_link(i)">- {{field.name}} link</button>
+                                    <button
+                                        class="button is-rounded is-info is-small"
+                                        @click="add_nav_link">+ Link</button>
                                 </div>
                             </div>
                         </div>
@@ -199,6 +226,14 @@
                         app.failed = 'get_analytics';
                     }
                 },
+                add_nav_link: async function () {
+                    this.config['navigation'].push({'name': 'Link', 'link': location.href});
+                    await this.set_config();
+                },
+                del_nav_link: async function (i) {
+                    this.config['navigation'].splice(i, 1);
+                    await this.set_config();
+                }
             }
         })
         // Pull init

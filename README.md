@@ -11,7 +11,7 @@ Use is easier than any blog ever:
 ```
 pip install postblog
 postblog init
-postblog open browser
+postblog open --dashboard
 ```
 
 After that just upload the site folder to a hosting or github pages

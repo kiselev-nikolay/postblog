@@ -16,12 +16,11 @@
                     <a class="navbar-item" href="/news/">
                         News
                     </a>
-                    <a class="navbar-item" href="https://github.com/machineandme">
-                        Github
+                    {% for item in navigation %}
+                    <a class="navbar-item" href="{{item.link}}">
+                        {{item.name}}
                     </a>
-                    <a class="navbar-item" href="https://pypi.org/user/machineandme/">
-                        Pypi
-                    </a>
+                    {% endfor %}
                 </div>
             </div>
         </div>

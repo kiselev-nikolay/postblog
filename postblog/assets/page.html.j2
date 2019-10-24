@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    {% include 'head.html.j2' %}
+</head>
+
+<body>
+    <section class="hero is-{{page.background}} is-large">
+        {% include 'nav.html.j2' %}
+        <div class="hero-body">
+            <div class="container has-text-centered">
+                <h1 class="title">
+                    {{page.title}}
+                </h1>
+                <h2 class="subtitle">
+                    {{page.subtitle}}
+                </h2>
+            </div>
+        </div>
+    </section>
+    <section class="section has-background-light">
+        <div class="container">
+            <div class="columns is-multiline is-mobile">
+                {% for card in page.cards %}
+                <div class="column is-{{card.size}}">
+                    <div class="box" style="height: 100%;">
+                        <h4 class="title is-4">{{card.title}}</h4>
+                        <p>{{card.text}}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+    {% include 'footer.html.j2' %}
+</body>
+
+</html>
