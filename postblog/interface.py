@@ -1,5 +1,6 @@
 from typing import Iterable, Dict
 from pathlib import Path
+import os
 import warnings
 import shutil
 import pickle
@@ -34,6 +35,7 @@ class Interface:
         self._posts.mkdir(exist_ok=True)
 
         self._config_path = self._storage / 'postblog.yml'
+        self._page_template = self._assets_templates / '_page.yml'
 
         self._web_path = Path('site')
         self._build_path = Path('assets')
@@ -44,11 +46,6 @@ class Interface:
         else:
             with open(self._assets_templates / '_postblog.yml', 'r') as file:
                 self._config = yaml.load(file, Loader=yaml.SafeLoader)
-
-        self._web = {
-            'posts': [],
-            'pages': {}
-        }
 
         self._env = Environment(
             loader=FileSystemLoader(
@@ -106,8 +103,7 @@ class Interface:
             if asset.is_file() and asset.name[0] != '_':
                 shutil.copyfile(asset, self._build_path / asset.name)
 
-        self._index_path = self._assets_templates / '_index.yml'
-        shutil.copyfile(self._index_path, self._storage / 'pages/index.yml')
+        shutil.copyfile(self._page_template, self._storage / 'pages/index.yml')
 
         self.build()
 
@@ -147,14 +143,44 @@ class Interface:
 
     def get_analytics(self):
         return self._analytics
+
+    def save_page(self, name, page, force=False):
+        if name in ['assets', 'news']:
+            return False
+        with open(self._page_template, 'r') as file:
+            default_config = yaml.load(file, Loader=yaml.SafeLoader)
+        default_config.update(page)
+        page = default_config
+        page['link'] = name
+        page_path = self._storage / 'pages/{}.yml'.format(name)
+        if not page_path.exists() or force:
+            with open(page_path, 'w') as file:
+                yaml.dump(page, file)
+            self.build()
+            return True
+        else:
+            return False
+
+    def del_page(self, name):
+        if name in ['assets', 'news']:
+            return False
+        page_path = self._storage / 'pages/{}.yml'.format(name)
+        os.remove(page_path)
+        self.build()
+
+    def get_page(self, name):
+        if name in ['assets', 'news']:
+            return False
+        page_path = self._storage / 'pages/{}.yml'.format(name)
+        with open(page_path) as file:
+            return yaml.load(file, Loader=yaml.SafeLoader)
+
+    def list_pages(self):
+        pages = [p.name[:-4] for p in self._pages.iterdir()]
+        return pages
     
     def build(self):
         start = time_ns()
-
-        self._web = {
-            'posts': [],
-            'pages': []
-        }
 
         if self._web_path.exists():
             shutil.rmtree(self._web_path)
@@ -172,8 +198,10 @@ class Interface:
             t = self._env.get_template('style.css.j2')
             file.write(t.render(**self._config['theme'], color=color_gen))
 
-        for post in self._refresh_web_posts():
-            self._web['posts'].append(post)
+        posts = self._refresh_web_posts()
+        pages = self._refresh_web_pages()
+
+        for post in posts:
             post_path = self._web_path / 'news' / post['link']
             post_path.parent.mkdir(exist_ok=True, parents=True)
             with open(post_path, 'w') as file:
@@ -181,33 +209,39 @@ class Interface:
                 file.write(t.render(last_build=Time(Datetime.now()).pub,
                                     page=dict(name=post['title'], base='../../../../'),
                                     post=post,
-                                    **self._config, **self._web))
+                                    **self._config, posts=posts))
 
-        for page in self._refresh_web_pages():
-            self._web['pages'].append(page)
-            with open(self._web_path / (page['link'] + '.html'), 'w') as file:
+        for page in pages:
+            if page['link'] == 'index':
+                content = dict(base='', **page)
+                page_path = self._web_path
+            else:
+                content = dict(base='../', **page)
+                page_path = self._web_path / page['link']
+            page_path.mkdir(exist_ok=True)
+            with open(page_path / 'index.html', 'w') as file:
                 t = self._env.get_template('page.html.j2')
                 file.write(t.render(last_build=Time(Datetime.now()).pub,
-                                    page=dict(base='', **page),
-                                    **self._config, **self._web))
+                                    page=content,
+                                    **self._config, posts=posts))
         
         (self._web_path / 'news').mkdir(exist_ok=True)
         with open(self._web_path / 'news/index.html', 'w') as file:
             t = self._env.get_template('news.html.j2')
             file.write(t.render(last_build=Time(Datetime.now()).pub,
                                 page=dict(name='News', base='../'),
-                                **self._config, **self._web))
+                                **self._config, posts=posts))
 
         with open(self._web_path / 'feed.xml', 'w') as file:
             t = self._env.get_template('rss.xml.j2')
             file.write(t.render(last_build=Time(Datetime.now()).pub,
                                 generator='Postblog {}'.format(VERSION),
-                                **self._config, **self._web))
+                                **self._config, posts=posts))
 
         with open(self._web_path / 'manifest.json', 'w') as file:
             t = self._env.get_template('manifest.json.j2')
             file.write(t.render(last_build=Time(Datetime.now()).pub,
-                                **self._config, **self._web))
+                                **self._config, posts=posts))
         
         self._write_analytics('build_speed', time_ns() - start)
 

@@ -12,9 +12,9 @@ site:
   script_js: console.log("Analytics is not used");
 navigation:
   - name: Github
-    link: https://github.com/machineandme
+    link: https://github.com/machineandme/postblog
   - name: Pypi
-    link: https://pypi.org/user/machineandme/
+    link: https://pypi.org/project/postblog/
 theme:
   danger: '#f14668'
   info: '#3298dc'

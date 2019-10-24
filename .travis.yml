@@ -7,6 +7,7 @@ install:
 script:
 - pipenv run postblog clear
 - pipenv run postblog init
+- pipenv run postblog post Hey "Hello world" "cats,music"
 - pipenv run postblog build
 - pipenv run postblog clear
 - pipenv run flake8 postblog/*

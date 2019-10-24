@@ -22,10 +22,10 @@
 </head>
 
 <body>
-    <section class="section has-background-light">
+    <section class="section has-background-light" style="min-height: 100vh;">
         <div class="container" id="app" v-cloak>
             <h1 class="title">Postblog Dashboard</h1>
-            <div class="columns">
+            <div class="columns is-multiline">
                 <div class="column is-7">
                     <div class="box">
                         <h3 class="title is-5">New post</h3>
@@ -50,41 +50,28 @@
                             </div>
                         </div>
                     </div>
-                    <div class="box">
-                        <div v-if="failed == 'get_analytics'">
-                            <button class="button is-rounded is-danger" @click="get_analytics">Reload</button>
-                            <br>
-                        </div>
-                        <div class="table-container">
-                            <table class="table is-hoverable is-striped">
-                                <tbody>
-                                    <tr>
-                                        <th>Build speed:</th>
-                                        <td>{{Math.round((analytics.build_speed / 1000000000)*100)/100}} seconds</td>
-                                    </tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
                 </div>
                 <div class="column is-5">
                     <div class="box">
                         <div class="buttons">
                             <a :class="(processing) ? 'button is-rounded is-primary is-loading' : 'button is-rounded is-primary'"
                                 href="/site/" target="_blank">View</a>
-                            <a :class="(processing) ? 'button is-rounded is-primary is-loading' : 'button is-rounded is-primary'"
-                                disabled>+ Page</a>
                             <button
                                 :class="(failed == 'build') ? 'button is-rounded is-danger' : 'button is-rounded is-success'"
-                                @click="build">Build</button>
+                                @click="build">Build<span
+                                    style="opacity: .25; margin: 0 8px">|</span>{{Math.round((analytics.build_speed / 1000000000)*100)/100}}s</button>
                         </div>
+
                     </div>
                     <div class="box">
                         <div class="tabs is-boxed">
                             <ul>
                                 <li v-for="fields, fields_title in config"
                                     :class="(fields_title == settings_cursor) ? 'is-active' : ''">
-                                    <a @click="settings_cursor = fields_title">{{fields_title}}</a>
+                                    <a
+                                        @click="(settings_cursor == fields_title) ? settings_cursor = '' : settings_cursor = fields_title">
+                                        {{fields_title}}
+                                    </a>
                                 </li>
                             </ul>
                         </div>
@@ -117,21 +104,118 @@
                                     <br>
                                 </div>
                                 <div class="buttons">
-                                    <button v-for="field, i in fields"
-                                        class="button is-rounded is-danger is-small"
+                                    <button v-for="field, i in fields" class="button is-rounded is-danger is-small"
                                         @click="del_nav_link(i)">- {{field.name}} link</button>
-                                    <button
-                                        class="button is-rounded is-info is-small"
-                                        @click="add_nav_link">+ Link</button>
+                                    <button class="button is-rounded is-info is-small" @click="add_nav_link">+
+                                        Link</button>
                                 </div>
                             </div>
                         </div>
-                        <br>
-                        <div class="field">
+                        <div v-if="settings_cursor != ''">
+                            <br>
+                            <div class="field">
+                                <div class="control">
+                                    <button
+                                        :class="(failed == 'set_config') ? 'button is-rounded is-danger' : (processing) ? 'button is-rounded is-loading' : 'button is-rounded is-success'"
+                                        @click="set_config">Apply</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="column is-12">
+                    <div class="box">
+                        <div class="field has-addons">
                             <div class="control">
-                                <button
-                                    :class="(failed == 'set_config') ? 'button is-rounded is-danger' : (processing) ? 'button is-rounded is-loading' : 'button is-rounded is-success'"
-                                    @click="set_config">Apply</button>
+                                <input
+                                    :class="(failed == 'add_page') ? 'input is-rounded is-danger' : (processing) ? 'input is-rounded is-loading' : 'input is-rounded is-success'"
+                                    type="text" placeholder="Page link" v-model="new_page['name']"
+                                    @keyup.enter="add_page">
+                            </div>
+                            <div class="control">
+                                <a :class="(failed == 'add_page') ? 'button is-rounded is-danger' : (processing) ? 'button is-rounded is-loading' : 'button is-rounded is-success'"
+                                    @click="add_page">
+                                    + Page
+                                </a>
+                            </div>
+                        </div>
+                        <div class="columns">
+                            <div class="column is-3" v-for="page in pages" style="margin: 26px 0">
+                                <div class="card">
+                                    <div class="card-content">
+                                        <p class="title is-5">{{page}}</p>
+                                    </div>
+                                    <footer class="card-footer">
+                                        <a class="card-footer-item" v-if="page != 'index'" :href="'/site/' + page">view</a>
+                                        <a class="card-footer-item" v-if="page == 'index'" href="/site">view</a>
+                                        <a class="card-footer-item" @click="del_page(page)">delete</a>
+                                        <a class="card-footer-item" @click="page_edit(page)">edit</a>
+                                    </footer>
+                                </div>
+                                <div v-if="page_in_edit == page" class="modal is-active">
+                                    <div class="modal-background"></div>
+                                    <div class="modal-content">
+                                        <div class="notification">
+                                            <div v-for="fields, title in page_edit_data">
+                                                <div class="field" v-if="title != 'cards'">
+                                                    <label class="label">{{title}}</label>
+                                                    <div class="control">
+                                                        <input class="input" v-model="page_edit_data[title]"></input>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <hr>
+                                            <div v-for="fields, title in page_edit_data">
+                                                <div class="field" v-if="title == 'cards'">
+                                                    <div v-for="field, i in fields">
+                                                        <div class="field">
+                                                            <label class="label">title</label>
+                                                            <div class="control">
+                                                                <input class="input"
+                                                                    v-model="page_edit_data[title][i]['title']"></input>
+                                                            </div>
+                                                        </div>
+                                                        <div class="field">
+                                                            <label class="label">size from 1 to 12</label>
+                                                            <div class="control">
+                                                                <input class="input" type="number" min="1" max="12" step="1"
+                                                                    v-model="page_edit_data[title][i]['size']"></input>
+                                                            </div>
+                                                        </div>
+                                                        <div class="field">
+                                                            <label class="label">text</label>
+                                                            <div class="control">
+                                                                <textarea class="textarea"
+                                                                    v-model="page_edit_data[title][i]['text']"></textarea>
+                                                            </div>
+                                                        </div>
+                                                        <br>
+                                                    </div>
+                                                    <div class="buttons">
+                                                        <button v-for="field, i in fields"
+                                                            class="button is-rounded is-danger is-small"
+                                                            @click="page_edit_data[title].splice(i, 1)">
+                                                            - {{field.title}} card</button>
+                                                        <button class="button is-rounded is-info is-small"
+                                                            @click="page_edit_data[title].push({title: '', text:'', size:6})">
+                                                            + Card
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <br>
+                                            <div class="field">
+                                                <div class="control">
+                                                    <button
+                                                        :class="(failed == 'update_page') ? 'button is-rounded is-danger' : (processing) ? 'button is-rounded is-loading' : 'button is-rounded is-success'"
+                                                        @click="update_page">Apply</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button class="modal-close is-large" @click="page_in_edit = ''"
+                                            aria-label="close"></button>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -161,12 +245,18 @@
             el: '#app',
             data: {
                 analytics: {},
-                settings_cursor: 'site',
+                settings_cursor: '',
                 processing: false,
                 failed: '',
+                pages: [],
+                page_in_edit: '',
+                page_edit_data: {},
                 new_post: {
                     title: '',
                     text: ''
+                },
+                new_page: {
+                    name: '',
                 },
                 config: {}
             },
@@ -217,28 +307,88 @@
                     this.get_analytics();
                 },
                 get_analytics: async function () {
-                    app.failed = '';
                     app.processing = true;
                     let result = await butler('get_analytics', null);
                     app.analytics = result;
                     app.processing = false;
-                    if (!result) {
-                        app.failed = 'get_analytics';
-                    }
                 },
                 add_nav_link: async function () {
-                    this.config['navigation'].push({'name': 'Link', 'link': location.href});
+                    this.config['navigation'].push({
+                        'name': 'Link',
+                        'link': location.href
+                    });
                     await this.set_config();
                 },
                 del_nav_link: async function (i) {
                     this.config['navigation'].splice(i, 1);
                     await this.set_config();
+                },
+                add_page: async function () {
+                    app.processing = true;
+                    let result = await butler('save_page', {
+                        'name': this.new_page.name,
+                        'page': {},
+                    });
+                    app.processing = false;
+                    if (!result) {
+                        app.failed = 'add_page';
+                    }
+                    this.list_pages();
+                    this.get_analytics();
+                },
+                del_page: async function (name) {
+                    if (!confirm(
+                            'There is no way to undo it here. Are you sure you want to destroy entire page?'
+                        )) {
+                        return
+                    }
+                    app.processing = true;
+                    let result = await butler('del_page', {
+                        'name': name,
+                    });
+                    this.list_pages();
+                    app.processing = false;
+                },
+                get_page: async function (name) {
+                    app.processing = true;
+                    let result = await butler('get_page', {
+                        'name': name,
+                    });
+                    this.page_edit_data = result;
+                    this.list_pages();
+                    app.processing = false;
+                },
+                list_pages: async function () {
+                    app.processing = true;
+                    let result = await butler('list_pages', {});
+                    this.pages = result;
+                    app.processing = false;
+                },
+                page_edit: async function (page_name) {
+                    this.get_page(page_name);
+                    this.page_in_edit = page_name;
+                },
+                update_page: async function () {
+                    app.processing = true;
+                    let result = await butler('save_page', {
+                        'name': this.page_in_edit,
+                        'page': this.page_edit_data,
+                        'force': true
+                    });
+                    app.processing = false;
+                    this.page_in_edit = '';
+                    if (!result) {
+                        app.failed = 'update_page';
+                    }
+                    this.list_pages();
+                    this.get_analytics();
                 }
             }
         })
         // Pull init
         app.get_config();
         app.get_analytics();
+        app.list_pages();
     </script>
 </body>
 
